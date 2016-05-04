@@ -1,0 +1,17 @@
+{
+  "name": "ept-auth",
+  "version": "0.0.1",
+  "description": "Default Epochtalk Authentication",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Edward Kim",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^0.8.0",
+    "bluebird": "^3.3.1",
+    "boom": "^3.1.2",
+    "joi": "^7.2.2"
+  }
+}
