@@ -72,6 +72,10 @@ module.exports = {
     };
 
     var promise = request.db.users.create(newUser)
+    // set newbie role
+    .tap(function(user) {
+      return request.db.roles.addRoles([user.username], 'CN0h5ZeBTGqMbzwVdMWahQ');
+    })
     .then(function(user) {
       if (config.verifyRegistration) {  // send confirmation email
         var confirmUrl = config.publicUrl + '/' + path.join('confirm', user.username, user.confirmation_token);
