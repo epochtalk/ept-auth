@@ -24,7 +24,14 @@ module.exports = {
 
     // deletes session, deletes user, no return
     var creds = request.auth.credentials;
-    var promise = request.session.delete(creds.sessionId, creds.id);
+    var promise = request.session.delete(creds.sessionId, creds.id)
+    .tap(function() {
+      var notification = {
+        channel: { type: 'user', id: creds.id },
+        data: { action: 'logout' }
+      };
+      request.server.plugins.notifications.systemNotification(notification);
+    });
     return reply(promise);
   }
 };
