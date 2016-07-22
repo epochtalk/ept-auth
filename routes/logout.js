@@ -28,7 +28,10 @@ module.exports = {
     .tap(function() {
       var notification = {
         channel: { type: 'user', id: creds.id },
-        data: { action: 'logout' }
+        data: {
+          action: 'logout',
+          sessionId: creds.sessionId
+        }
       };
       request.server.plugins.notifications.systemNotification(notification);
     });
