@@ -19,7 +19,7 @@ var Promise = require('bluebird');
   * @apiError (Error 500) InternalServerError There was an error updating the user account's reset token information
   */
 module.exports = {
-  method: 'GET',
+  method: 'POST',
   path: '/api/recover/{query}',
   config: {
     validate: { params: { query: Joi.string().min(1).max(255).required(), } }

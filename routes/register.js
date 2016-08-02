@@ -76,8 +76,9 @@ module.exports = {
     .tap(function(user) {
       return request.db.roles.addRoles([user.username], 'CN0h5ZeBTGqMbzwVdMWahQ');
     })
+    // send confirmation email
     .then(function(user) {
-      if (config.verifyRegistration) {  // send confirmation email
+      if (config.verifyRegistration) {
         var confirmUrl = config.publicUrl + '/' + path.join('confirm', user.username, user.confirmation_token);
         var emailParams = { email: user.email, username: user.username, confirm_url: confirmUrl };
         request.server.log('debug', emailParams);
@@ -91,6 +92,7 @@ module.exports = {
       else { return user; }
     })
     // TODO: Move to post handler code
+    // check malicious score and ban if necessary
     .then(function(createdUser) {
       if (config.verifyRegistration) { return createdUser; }
       else {
