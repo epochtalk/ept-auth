@@ -22,6 +22,7 @@ module.exports = {
   method: 'POST',
   path: '/api/recover/{query}',
   config: {
+    plugins: { backoff: true },
     validate: { params: { query: Joi.string().min(1).max(255).required(), } }
   },
   handler: function(request, reply) {
@@ -53,6 +54,7 @@ module.exports = {
         username: user.username,
         reset_url: config.publicUrl + '/' + path.join('reset', user.username, user.reset_token)
       };
+      request.server.log('debug', emailParams);
       return request.emailer.send('recoverAccount', emailParams);
     });
     return reply(promise);

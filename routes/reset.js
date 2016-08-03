@@ -57,6 +57,14 @@ module.exports = {
       else { return Promise.reject(Boom.badRequest('Invalid Reset Token.')); }
     })
     .then(request.db.users.update)
+    // release any pressue on backoff
+    .then(function() {
+      var ip = request.info.remoteAddress;
+      var path = '/api/recover/{query}';
+      var method = 'POST';
+      var pressureRelease = request.server.plugins.backoff.release;
+      return pressureRelease(request.db.db, ip, path, method);
+    })
     .then(function() {
       // TODO: Send password reset confirmation email here
       return 'Password Successfully Reset';
