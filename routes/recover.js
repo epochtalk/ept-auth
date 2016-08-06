@@ -1,6 +1,6 @@
-var Joi = require('joi');
 var path = require('path');
 var Boom = require('boom');
+var Request = require('request');
 var crypto = require('crypto');
 var Promise = require('bluebird');
 
@@ -20,26 +20,59 @@ var Promise = require('bluebird');
   */
 module.exports = {
   method: 'POST',
-  path: '/api/recover/{query}',
+  path: '/api/recover',
   config: {
-    plugins: { backoff: true },
-    validate: { params: { query: Joi.string().min(1).max(255).required(), } }
+    plugins: { backoff: true }
   },
   handler: function(request, reply) {
+    var query = request.payload.query;
     var config = request.server.app.config;
-    var query = request.params.query;
-    var promise = request.db.users.userByUsername(query) // get full user info
-    .then(function(user) {
-      if (user) { return user; }
-      else { return Promise.reject(Boom.badRequest('No Account Found')); }
+    var recaptcha = request.payload.recaptcha;
+    var secretKey = config.recaptchaSecretKey;
+    var remoteAddress = request.info.remoteAddress;
+
+    // validate the payload
+    if (!recaptcha) {
+      return reply(Boom.badRequest('Please click the checkbox'));
+    }
+    if (!query) {
+      return reply(Boom.badRequest('Please enter a username or email'));
+    }
+
+    // setup reCaptcha url
+    var urlBase = 'https://www.google.com/recaptcha/api/siteverify';
+    var url = urlBase + `?secret=${secretKey}&response=${recaptcha}&remoteip=${remoteAddress}`;
+
+    // check the captcha with google
+    var promise =  new Promise(function(resolve, reject) {
+      Request(url, (err, response, body) => {
+        // parse body
+        try { body = JSON.parse(body); }
+        catch (e) { return reject(Boom.badRequest('Parsing Error on Recaptcha')); }
+
+        // validate recaptcha validation response
+        var error = 'Failed reCaptcha Check';
+        if (err || response.statusCode !== 200) { return reject(Boom.badRequest(error)); }
+        else if (!body.success) { return reject(Boom.badRequest(error)); }
+        else if (body.success) { return resolve(); }
+        else { return reject(Boom.badRequest(error)); }
+      });
     })
-    .catch(function() { return request.db.users.userByEmail(query); })
-    .then(function(user) {
-      if (user) { return user; }
-      else { return Promise.reject(Boom.badRequest('No Account Found')); }
+    // get full user info
+    .then(function() {
+      return request.db.users.userByUsername(query)
+      .then(function(user) {
+        if (user) { return user; }
+        else { return Promise.reject(Boom.badRequest('No Account Found')); }
+      })
+      .catch(function() { return request.db.users.userByEmail(query); })
+      .then(function(user) {
+        if (user) { return user; }
+        else { return Promise.reject(Boom.badRequest('No Account Found')); }
+      });
     })
+    // Build updated user with resetToken and resetExpiration
     .then(function(user) {
-      // Build updated user with resetToken and resetExpiration
       var updateUser = {};
       updateUser.reset_token = crypto.randomBytes(20).toString('hex');
       updateUser.reset_expiration = Date.now() + 1000 * 60 * 60; // 1 hr
@@ -47,8 +80,8 @@ module.exports = {
       // Store token and expiration to user object
       return request.db.users.update(updateUser);
     })
+    // Email user reset information here
     .then(function(user) {
-      // Email user reset information here
       var emailParams = {
         email: user.email,
         username: user.username,
