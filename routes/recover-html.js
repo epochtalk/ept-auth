@@ -9,7 +9,8 @@ module.exports = {
       keywords: config.website.keywords,
       logo: config.website.logo,
       favicon: config.website.favicon,
-      siteKey: config.recaptchaSiteKey
+      siteKey: config.recaptchaSiteKey,
+      GAKey: config.gaKey
     };
 
     return reply.view('recover', data);
