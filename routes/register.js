@@ -80,7 +80,12 @@ module.exports = {
     .then(function(user) {
       if (config.verifyRegistration) {
         var confirmUrl = config.publicUrl + '/' + path.join('confirm', user.username, user.confirmation_token);
-        var emailParams = { email: user.email, username: user.username, confirm_url: confirmUrl };
+        var emailParams = {
+          email: user.email,
+          username: user.username,
+          siteName: config.website.title,
+          confirm_url: confirmUrl
+        };
         request.server.log('debug', emailParams);
         request.emailer.send('confirmAccount', emailParams);
         return {

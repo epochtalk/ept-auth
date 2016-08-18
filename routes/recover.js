@@ -1,7 +1,7 @@
 var path = require('path');
 var Boom = require('boom');
-var Request = require('request');
 var crypto = require('crypto');
+var Request = require('request');
 var Promise = require('bluebird');
 
 /**
@@ -85,6 +85,7 @@ module.exports = {
       var emailParams = {
         email: user.email,
         username: user.username,
+        siteName: config.website.title,
         reset_url: config.publicUrl + '/' + path.join('reset', user.username, user.reset_token)
       };
       request.server.log('debug', emailParams);
