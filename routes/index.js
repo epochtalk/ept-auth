@@ -12,5 +12,6 @@ module.exports = [
   require(path.normalize(__dirname + '/recover')),
   require(path.normalize(__dirname + '/reset')),
   require(path.normalize(__dirname + '/checkResetToken')),
-  require(path.normalize(__dirname + '/adminRecover'))
+  require(path.normalize(__dirname + '/adminRecover')),
+  require(path.normalize(__dirname + '/invite-register'))
 ];

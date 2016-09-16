@@ -1,5 +1,6 @@
 var Joi = require('joi');
 var path = require('path');
+var Boom = require('boom');
 var crypto = require('crypto');
 
 /**
@@ -57,20 +58,26 @@ module.exports = {
     pre: [ { method: 'auth.auth.register(server, payload.email, payload.username)' } ]
   },
   handler: function(request, reply) {
+    var config = request.server.app.config;
+
+    // check if registration is open
+    if (config.inviteOnly) {
+      return reply(Boom.locked('Registration is Closed'));
+    }
+
     // check if already logged in with jwt
     if (request.auth.isAuthenticated) {
       var loggedInUser = request.auth.credentials;
       return reply(request.session.formatUserReply(loggedInUser.token, loggedInUser));
     }
 
-    var config = request.server.app.config;
+    // create new user
     var newUser = {
       username: request.payload.username,
       email: request.payload.email,
       password: request.payload.password,
       confirmation_token: config.verifyRegistration ? crypto.randomBytes(20).toString('hex') : null
     };
-
     var promise = request.db.users.create(newUser)
     // set newbie role
     .tap(function(user) {
