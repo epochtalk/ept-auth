@@ -59,6 +59,7 @@ module.exports = {
     })
     // TODO: Move to post handler code
     .then(function(createdUser) {
+      createdUser.avatar = '/static/img/avatar.png';
       var ip = request.headers['x-forwarded-for'] || request.info.remoteAddress;
       var opts = { ip: ip, userId: createdUser.id };
       return request.db.bans.getMaliciousScore(opts)
