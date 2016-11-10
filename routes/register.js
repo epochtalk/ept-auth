@@ -106,6 +106,7 @@ module.exports = {
     // TODO: Move to post handler code
     // check malicious score and ban if necessary
     .then(function(createdUser) {
+      createdUser.avatar = '/static/img/avatar.png';
       if (config.verifyRegistration) { return createdUser; }
       else {
         var ip = request.headers['x-forwarded-for'] || request.info.remoteAddress;
