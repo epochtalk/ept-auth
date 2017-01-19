@@ -1,6 +1,6 @@
 {
   "name": "ept-auth",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Default Epochtalk Authentication",
   "main": "index.js",
   "scripts": {
